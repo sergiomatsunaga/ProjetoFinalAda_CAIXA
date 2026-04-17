@@ -1,0 +1,30 @@
+name: CI/CD MovieFlix
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: docker build -t movieflix-app .
+
+      - name: Test Container
+        run: |
+          docker run -d -p 3000:3000 movieflix-app
+          sleep 5
+          curl -f http://localhost:3000 || exit 1
+
+      - name: Login Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+      - name: Push Image
+        run: |
+          docker tag movieflix-app ${{ secrets.DOCKER_USER }}/movieflix-app:latest
+          docker push ${{ secrets.DOCKER_USER }}/movieflix-app:latest
