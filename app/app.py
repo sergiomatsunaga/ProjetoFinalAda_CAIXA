@@ -3,23 +3,16 @@ import psycopg2
 
 app = Flask(__name__)
 
-def get_connection():
-    return psycopg2.connect(
-    host="localhost",
-    database="movieflix",
-    user="movieflix",
-    password="movieflix"
-    )
+@app.route('/')
+def home():
+    return {"message": "MovieFlix API rodando"}
 
-@app.route("/top_movies")
-def top_movies():
-    conn = get_connection()
+@app.route('/movies')
+def movies():
+    conn = psycopg2.connect("dbname=movieflix user=user password=password host=db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM top_movies;")
+    cur.execute("SELECT * FROM movies LIMIT 10")
     rows = cur.fetchall()
-    cur.close()
-    conn.close()
     return jsonify(rows)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+app.run(host='0.0.0.0', port=5000)
